@@ -79,16 +79,18 @@
 
 
 
-<meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
+<meta name="description" content="前言  intel 8086是一个16位的CPU。CPU内部结构如下图 可以看到，在CPU内部的数据总线是十六位的，但是8086外部的地址总线是20位的，也就是说8086的实际物理地址是1MB。在BIU区域存在一个地址加法器，地址线经过这个加法器之后从16位变成了20位。那么这个过程是如何实现的呢？这就是这篇博客的需要讲的。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://yoursite.com/2018/03/12/hello-world/index.html">
+<meta property="og:title" content="myBlog">
+<meta property="og:url" content="http://yoursite.com/2018/03/12/intel8086的内存分段管理机制/index.html">
 <meta property="og:site_name" content="myBlog">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
-<meta property="og:updated_time" content="2018-03-12T11:36:26.219Z">
+<meta property="og:description" content="前言  intel 8086是一个16位的CPU。CPU内部结构如下图 可以看到，在CPU内部的数据总线是十六位的，但是8086外部的地址总线是20位的，也就是说8086的实际物理地址是1MB。在BIU区域存在一个地址加法器，地址线经过这个加法器之后从16位变成了20位。那么这个过程是如何实现的呢？这就是这篇博客的需要讲的。">
+<meta property="og:image" content="http://img.blog.csdn.net/20180312095907370?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2lsbGlhbWdhdmlu/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:updated_time" content="2018-03-12T11:43:09.566Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hello World">
-<meta name="twitter:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
+<meta name="twitter:title" content="myBlog">
+<meta name="twitter:description" content="前言  intel 8086是一个16位的CPU。CPU内部结构如下图 可以看到，在CPU内部的数据总线是十六位的，但是8086外部的地址总线是20位的，也就是说8086的实际物理地址是1MB。在BIU区域存在一个地址加法器，地址线经过这个加法器之后从16位变成了20位。那么这个过程是如何实现的呢？这就是这篇博客的需要讲的。">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20180312095907370?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2lsbGlhbWdhdmlu/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
 
 
 
@@ -118,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/03/12/hello-world/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/03/12/intel8086的内存分段管理机制/"/>
 
 
 
 
 
-  <title>Hello World | myBlog</title>
+  <title> | myBlog</title>
   
 
 
@@ -231,7 +233,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/12/hello-world/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/12/intel8086的内存分段管理机制/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="williamgavin">
@@ -248,7 +250,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Hello World</h1>
+          <h1 class="post-title" itemprop="name headline"></h1>
         
 
         <div class="post-meta">
@@ -260,7 +262,7 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-12T17:06:26+08:00">
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-12T17:26:53+08:00">
                 2018-03-12
               </time>
             
@@ -298,16 +300,40 @@
       
 
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
+        <h2 id="前言"><a name="t0"></a>前言</h2>
+
+<p>intel 8086是一个16位的CPU。CPU内部结构如下图<img src="http://img.blog.csdn.net/20180312095907370?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvd2lsbGlhbWdhdmlu/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述" title=""> <br><br>可以看到，在CPU内部的数据总线是十六位的，但是8086外部的地址总线是20位的，也就是说8086的实际物理地址是1MB。在BIU区域存在一个地址加法器，地址线经过这个加法器之后从16位变成了20位。那么这个过程是如何实现的呢？这就是这篇博客的需要讲的。</p>
+
 <a id="more"></a> 
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+<h2 id="正文"><a name="t1"></a>正文</h2>
+
+
+
+<h4 id="为什么要分段管理">为什么要分段管理？</h4>
+
+<p>CPU内部的数据总线和段寄存器都是16位的，用他们做地址寄存器智能寻址64KB单元，但是8086的实际物理地址有1MB，如何解决这个问题呢？采用分段技术。</p>
+
+<h5 id="什么是分段技术">什么是分段技术？</h5>
+
+<p>将1MB的内存空间分成若干段，每一段的第一个地址称为段首址，并且用段首址来表示这一段的内存地址。段首址必须要能被16整除，为什么呢？这样的话，段首址就可以用16位来保存，低4位全部为零，高16位可放在段寄存器中。</p>
+
+<h4 id="介绍几个概念">介绍几个概念：</h4>
+
+<p>逻辑地址：逻辑地址是一对，包括段首址和偏移地址，如代码段表示为CS：IP。 <br><br>偏移地址：相对于段首址的偏移量，放在 IP 寄存器里面。 <br><br>物理地址：实际的内存地址，用20bit表示。 <br><br>段首址用段寄存器来表示，包括CS（代码段）、DS（数据段）、SS（堆栈段）和ES（附加段）。偏移地址用 IP 来表示。如上图所示。 <br><br>举个例子：如果一个内存地址（物理地址）为：2304AH，段首址为2304H。那么逻辑地址为：2304H：000AH。这一段内存的实际长度可以用偏移量表示，大小为0000H ~ FFFFH，也就是64KB。</p>
+
+<p>那么逻辑地址是如何变成物理地址呢？这也就是前言中提到的问题。公式如下： <br><br>物理地址 = 对应寄存器 * 10H + 段内偏移量</p>
+
+<p>还是刚刚那个例子，2304H * 10H = 23040H <br><br>23040H + 0000AH = 2304AH</p>
+
+
+
+<h2 id="结论"><a name="t2"></a>结论</h2>
+
+<p>地址加法器就是进行这样一个运算：物理地址 = 对应寄存器 * 10H + 段内偏移量 <br><br>对应寄存器指的是：CS、DS、SS、ES 寄存器里面的值，段内偏移量指的是IP寄存器里面的值。如此16的CPU可以寻址1MB的内存空间。</p>
+
+<h4 id="参考资料">参考资料</h4>
+
+<p></p><p>微机原理与接口技术 <br><br><a href="https://zhidao.baidu.com/question/35423704.html" target="_blank">8086存储机制</a> <br><br><a href="https://wenku.baidu.com/view/363426a684254b35eefd34b4.html" target="_blank">8086功能结构</a></p>                <br>                                                <link rel="stylesheet" href="http://csdnimg.cn/release/phoenix/production/markdown_views-68a8aad09e.css"><br>                                    <br>    <p></p>
 
       
     </div>
@@ -332,15 +358,15 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2018/03/12/hello-world/" rel="next" title="Hello World">
+                <i class="fa fa-chevron-left"></i> Hello World
+              </a>
+            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/12/intel8086的内存分段管理机制/" rel="prev" title="">
-                 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -463,7 +489,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Quick-Start"><span class="nav-number">1.</span> <span class="nav-text">Quick Start</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-a-new-post"><span class="nav-number">1.1.</span> <span class="nav-text">Create a new post</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Run-server"><span class="nav-number">1.2.</span> <span class="nav-text">Run server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Generate-static-files"><span class="nav-number">1.3.</span> <span class="nav-text">Generate static files</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deploy-to-remote-sites"><span class="nav-number">1.4.</span> <span class="nav-text">Deploy to remote sites</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#为什么要分段管理"><span class="nav-number">2.0.1.</span> <span class="nav-text">为什么要分段管理？</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#什么是分段技术"><span class="nav-number">2.0.1.1.</span> <span class="nav-text">什么是分段技术？</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#介绍几个概念"><span class="nav-number">2.0.2.</span> <span class="nav-text">介绍几个概念：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论"><span class="nav-number">3.</span> <span class="nav-text">结论</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">3.0.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
